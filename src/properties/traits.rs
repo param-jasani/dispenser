@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use chrono::{Local, DateTime};
-use super::AccessMethods;
+use super::{AccessMethods, file_props::FileProperties, dir_props::DirectoryProperties};
 
 pub trait Info {
     fn name(&self) -> Option<String>;
@@ -23,6 +23,8 @@ pub trait Hash {
     fn hash(&self) -> Option<String>;
 }
 
-pub trait AllInfo {
-    fn info(&self);
+pub trait child_items{
+    fn contains(&self) -> (u32, u32);
+    fn retrive_child_files(&self) -> Option<Vec<FileProperties>>;
+    fn retrive_sub_folders(&self) -> Option<Vec<DirectoryProperties>>;
 }

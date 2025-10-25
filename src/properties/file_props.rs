@@ -6,7 +6,7 @@ use chrono::{Local, DateTime};
 use super::{AccessMethods, traits::*};
 
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub(crate) struct FileProperties {
     name: Option<String>, 
     extension: Option<String>,

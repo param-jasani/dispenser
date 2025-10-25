@@ -23,3 +23,6 @@ pub trait Hash {
     fn hash(&self) -> Option<String>;
 }
 
+pub trait AllInfo {
+    fn info(&self);
+}

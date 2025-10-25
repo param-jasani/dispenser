@@ -3,10 +3,10 @@ use std::{fs, path::PathBuf};
 use faccess::PathExt;
 use sha256::digest;
 use chrono::{Local, DateTime};
-use super::AccessMethods;
-use crate::properties::traits::*;
+use super::{AccessMethods, traits::*};
 
 
+#[derive(Debug)]
 pub(crate) struct FileProperties {
     name: Option<String>, 
     extension: Option<String>,
@@ -65,7 +65,7 @@ impl Hash for FileProperties{
 }
 
 
-pub fn create_file_properties(file_path: Vec<PathBuf>) -> Vec<FileProperties> {
+pub fn set_file_properties(file_path: &Vec<PathBuf>) -> Vec<FileProperties> {
     let mut file_prop_struct_collection: Vec<FileProperties> = Vec::new();
     for path in file_path {
         let metadata = path.metadata().expect("Error!! Cannot retrive metadata.");

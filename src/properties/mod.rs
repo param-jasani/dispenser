@@ -1,8 +1,8 @@
 pub mod traits;
 pub mod file_props;
-mod dir_props;
+pub mod dir_props;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum AccessMethods {
     Read,
     Write,

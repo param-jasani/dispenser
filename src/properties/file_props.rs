@@ -16,7 +16,6 @@ pub(crate) struct FileProperties {
     date_modified: Option<DateTime<Local>>,
     date_accessed: Option<DateTime<Local>>,
     access_permissions: Vec<AccessMethods>, 
-    sha256: Option<String>,
 }
 
 
@@ -60,7 +59,7 @@ impl Permission for FileProperties {
 
 impl Hash for FileProperties{
     fn hash(&self) -> Option<String> {
-        self.sha256.to_owned()
+        fs::read(self.location.to_owned().expect("Err!! Couldn't find the given location of file.").join(self.name.to_owned().expect("Err!! Unable to fetch file name."))).ok().map(|file_contents| digest(file_contents))
     }    
 }
 
@@ -86,8 +85,7 @@ pub fn set_file_properties(file_path: &Vec<PathBuf>) -> Vec<FileProperties> {
         if path.executable() {
             access_permissions.push(AccessMethods::Execute);
         }
-        let sha256 = fs::read(path).ok().map(|file_contents| digest(file_contents));
-        file_prop_struct_collection.push(FileProperties { name, extension, size, location, date_created, date_modified, date_accessed, access_permissions, sha256}); 
+        file_prop_struct_collection.push(FileProperties { name, extension, size, location, date_created, date_modified, date_accessed, access_permissions}); 
     }
     file_prop_struct_collection
 }

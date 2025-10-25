@@ -21,11 +21,11 @@ fn main() {
     if file_paths.len() > 0 {
         let file_properties = set_file_properties(&file_paths);
         for property in file_properties{
-
+            println!("{}", property.hash().unwrap());
         }
     }
     if dir_paths.len() > 0 {
-        let directory_properties = set_directory_properties(&dir_paths, false);
+        let directory_properties = set_directory_properties(&dir_paths, true);
         for property in directory_properties{
             property.info();
         }

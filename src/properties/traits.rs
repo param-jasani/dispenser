@@ -5,7 +5,7 @@ use super::{AccessMethods, file_props::FileProperties, dir_props::DirectoryPrope
 pub trait Info {
     fn name(&self) -> Option<String>;
     fn extension(&self) -> Option<String>;
-    fn size(&self) -> f64;
+    fn size(&self) -> (f64, u32, u32);
     fn location(&self) -> Option<PathBuf>;
 }
 
@@ -23,8 +23,8 @@ pub trait Hash {
     fn hash(&self) -> Option<String>;
 }
 
-pub trait child_items{
-    fn contains(&self) -> (u32, u32);
+pub trait Child_Items{
+    fn child_flag(&self) -> bool;
     fn retrive_child_files(&self) -> Option<Vec<FileProperties>>;
     fn retrive_sub_folders(&self) -> Option<Vec<DirectoryProperties>>;
 }

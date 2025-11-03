@@ -4,7 +4,7 @@ use faccess::PathExt;
 use super::{AccessMethods, traits::*, file_props::*};
 use std::{path::PathBuf, fs};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct DirectoryProperties {
     name: Option<String>,
     ptype: Option<String>,
@@ -17,7 +17,7 @@ pub(crate) struct DirectoryProperties {
     children_items: Option<FileFolders>
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct FileFolders{
     files: Vec<FileProperties>,
     folders: Vec<DirectoryProperties>
@@ -37,8 +37,8 @@ impl Info for DirectoryProperties  {
         self.location.to_owned()
     }
 
-    fn size(&self) -> f64 {
-        self.size
+    fn size(&self) -> (f64, u32, u32) {
+        (self.size, self.n_o_files, self.n_o_folders)
     }
 }
 
@@ -62,11 +62,13 @@ impl Permission for DirectoryProperties{
     }
 }
 
-impl child_items for DirectoryProperties {
-    fn contains(&self) -> (u32, u32) {
-        (self.n_o_files, self.n_o_folders)
+impl Child_Items for DirectoryProperties {
+    fn child_flag(&self) -> bool {
+        match self.children_items.to_owned() {
+            Some(item) => true,
+            None => false,
+        }
     }
-
     fn retrive_child_files(&self) -> Option<Vec<FileProperties>> {
         match self.children_items.to_owned() {
             Some(files_folders) => Some(files_folders.files),
@@ -82,7 +84,11 @@ impl child_items for DirectoryProperties {
     }
 }
 
-pub fn set_directory_properties(dir_paths: &Vec<PathBuf>, rec_flag: bool) -> Vec<DirectoryProperties>{
+pub fn set_directory_properties(dir_paths: &Vec<PathBuf>, mut rec_value: u32) -> Vec<DirectoryProperties>{
+    let mut rec_flag = false;
+    if rec_value > 0 {
+        rec_flag = true;
+    }
     let mut dir_prop_struct_collection: Vec<DirectoryProperties> = Vec::new();
     for path in dir_paths {
         let metadata = path.metadata().expect("Error!! Cannot retrive metadata.");
@@ -101,9 +107,10 @@ pub fn set_directory_properties(dir_paths: &Vec<PathBuf>, rec_flag: bool) -> Vec
         if path.executable() {
             access_permissions.push(AccessMethods::Execute);
         }
-        if rec_flag{
+        if rec_value > 0{
+            rec_value -= 1;
             let file_properties = set_file_properties(&files);
-            let dir_props= set_directory_properties(&folders, true);
+            let dir_props= set_directory_properties(&folders, rec_value);
             dir_prop_struct_collection.push(DirectoryProperties{ name, ptype, size, location, date_created, n_o_files, n_o_folders, access_permissions, children_items: Some(FileFolders{files: file_properties, folders: dir_props}) }); 
         }
         else {

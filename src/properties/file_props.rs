@@ -6,7 +6,7 @@ use chrono::{Local, DateTime};
 use super::{AccessMethods, traits::*};
 
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct FileProperties {
     name: Option<String>, 
     extension: Option<String>,
@@ -32,8 +32,8 @@ impl Info for FileProperties {
         self.location.to_owned()
     }
 
-    fn size(&self) -> f64 {
-        self.size
+    fn size(&self) -> (f64, u32, u32) {
+        (self.size, 0, 0)
     }
 }
 

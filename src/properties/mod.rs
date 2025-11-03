@@ -8,4 +8,3 @@ pub enum AccessMethods {
     Write,
     Execute,
 }
-

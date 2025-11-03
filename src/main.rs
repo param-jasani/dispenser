@@ -2,20 +2,10 @@ mod properties;
 mod path_error_handler;
 mod display_props;
 mod sorter;
-use clap::{Parser, ValueEnum}; 
-use properties::{dir_props::*};
+use clap::{Parser}; 
 use path_error_handler::path_checker_and_separator;
-use display_props::{display_file_properties, display_directory_properties};
-
-
-#[derive(Clone, Debug, ValueEnum)]
-enum sort_flags{
-    sn,
-    se,
-    sdm,
-    sda,
-    sdc
-}
+use display_props::{display_file_properties, display_directory_properties, display_file_checksum};
+use sorter::{sort_flags, sort_files};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -32,25 +22,9 @@ struct Args {
     #[arg(short, long)]
     metadata: bool,
 
-    /// view metadata in table format
-    #[arg(short, long)]
-    table: bool,
-
     /// depth level to traverse for directories
     #[arg(short, long, default_value_t = 0)]
     depth: u32,
-
-    /// compress.
-    #[arg(short, long)]
-    compress: bool,
-
-    /// extract.
-    #[arg(short, long)]
-    extract: bool,
-
-    /// lock file using AES-256
-    #[arg(short, long)]
-    lock: bool,
 
     /// calculate SHA-256 checksum of files.
     #[arg(long)]
@@ -76,15 +50,28 @@ fn main() {
                                                   management tool.
     "##;
     println!("{}", ascii_art);
-    if file_paths.len() > 0 {
-        display_file_properties(&file_paths);
+    if args.metadata{
+        if file_paths.len() > 0 {
+            display_file_properties(&file_paths);
+        }
+        if dir_paths.len() > 0 {
+            display_directory_properties(&dir_paths, depth);
+        }
     }
-    if dir_paths.len() > 0 {
-        display_directory_properties(&dir_paths, depth);
+    if args.checksum{
+        if file_paths.len() > 0 {
+            display_file_checksum(&file_paths);
+        }
     }
-    if symlink_paths.len() > 0 {
-    
+    if args.sort != sort_flags::sn{
+        if dir_paths.len() > 0{
+            if depth == 0{
+                depth = 1;
+            }
+            sort_files(&dir_paths, args.sort, depth);
+        }
     }
+
     if metadata_na.len() > 0 {
         println!("\nCan't read the metadata of the following paths -");
         println!("{:?}", metadata_na);

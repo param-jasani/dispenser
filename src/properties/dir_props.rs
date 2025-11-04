@@ -11,6 +11,8 @@ pub(crate) struct DirectoryProperties {
     size: f64,
     location: Option<PathBuf>,
     date_created: Option<DateTime<Local>>,
+    date_modified: Option<DateTime<Local>>,
+    date_accessed: Option<DateTime<Local>>,
     n_o_files: u32,
     n_o_folders: u32,
     access_permissions: Vec<AccessMethods>,
@@ -96,6 +98,8 @@ pub fn set_directory_properties(dir_paths: &Vec<PathBuf>, mut rec_value: u32) ->
         let ptype = Some("Directory".to_string());
         let location = path.parent().map(|p| p.to_path_buf());
         let date_created: Option<DateTime<Local>> = metadata.created().ok().map(|dc| DateTime::from(dc));
+        let date_modified: Option<DateTime<Local>> = metadata.modified().ok().map(|dc| DateTime::from(dc));
+        let date_accessed: Option<DateTime<Local>> = metadata.accessed().ok().map(|dc| DateTime::from(dc));
         let (size,  n_o_files, n_o_folders, files, folders) = get_size_and_count(path, rec_flag);        
         let mut access_permissions: Vec<AccessMethods> = Vec::new();
         if path.readable() {
@@ -111,10 +115,10 @@ pub fn set_directory_properties(dir_paths: &Vec<PathBuf>, mut rec_value: u32) ->
             rec_value -= 1;
             let file_properties = set_file_properties(&files);
             let dir_props= set_directory_properties(&folders, rec_value);
-            dir_prop_struct_collection.push(DirectoryProperties{ name, ptype, size, location, date_created, n_o_files, n_o_folders, access_permissions, children_items: Some(FileFolders{files: file_properties, folders: dir_props}) }); 
+            dir_prop_struct_collection.push(DirectoryProperties{ name, ptype, size, location, date_created, date_modified, date_accessed, n_o_files, n_o_folders, access_permissions, children_items: Some(FileFolders{files: file_properties, folders: dir_props}) }); 
         }
         else {
-            dir_prop_struct_collection.push(DirectoryProperties{ name, ptype, size, location, date_created, n_o_files, n_o_folders, access_permissions, children_items: None}); 
+            dir_prop_struct_collection.push(DirectoryProperties{ name, ptype, size, location, date_created, date_modified, date_accessed, n_o_files, n_o_folders, access_permissions, children_items: None}); 
         }
     }
     dir_prop_struct_collection

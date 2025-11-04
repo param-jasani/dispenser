@@ -73,8 +73,8 @@ pub fn set_file_properties(file_path: &Vec<PathBuf>) -> Vec<FileProperties> {
         let size = metadata.len() as f64 / 1024 as f64;
         let location = path.parent().map(|p| p.to_path_buf());
         let date_created: Option<DateTime<Local>> = metadata.created().ok().map(|dc| DateTime::from(dc));
-        let date_modified: Option<DateTime<Local>> = metadata.created().ok().map(|dm| DateTime::from(dm)); 
-        let date_accessed: Option<DateTime<Local>> = metadata.created().ok().map(|da| DateTime::from(da)); 
+        let date_modified: Option<DateTime<Local>> = metadata.modified().ok().map(|dm| DateTime::from(dm)); 
+        let date_accessed: Option<DateTime<Local>> = metadata.accessed().ok().map(|da| DateTime::from(da)); 
         let mut access_permissions: Vec<AccessMethods> = Vec::new();
         if path.readable() {
             access_permissions.push(AccessMethods::Read);

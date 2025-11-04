@@ -1,4 +1,4 @@
-use crate::properties::{self, dir_props::*, file_props::*, traits::*};
+use crate::properties::{dir_props::*, file_props::*, traits::*};
 
 fn display_props<T>(num: usize, property: &T)
 where   

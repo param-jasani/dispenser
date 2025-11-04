@@ -23,7 +23,7 @@ pub trait Hash {
     fn hash(&self) -> Option<String>;
 }
 
-pub trait Child_Items{
+pub trait ChildItems{
     fn child_flag(&self) -> bool;
     fn retrive_child_files(&self) -> Option<Vec<FileProperties>>;
     fn retrive_sub_folders(&self) -> Option<Vec<DirectoryProperties>>;

@@ -5,7 +5,7 @@ mod sorter;
 use clap::{Parser}; 
 use path_error_handler::path_checker_and_separator;
 use display_props::{display_file_properties, display_directory_properties, display_file_checksum};
-use sorter::{sort_flags, sort_files};
+use sorter::{SortFlags, sort_files};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -15,8 +15,8 @@ struct Args {
     paths: Vec<String>,
 
     /// sort files based on extension(se) - default, date created(sdc), date modified(sdm), date accessed(sda)
-    #[arg(short, long, value_enum, default_value_t = sort_flags::sn)]
-    sort: sort_flags,
+    #[arg(short, long, value_enum, default_value_t = SortFlags::SN)]
+    sort: SortFlags,
 
     /// retrieve metadata of the given path.
     #[arg(short, long)]
@@ -36,7 +36,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let mut depth = Args::parse().depth;
-    let (file_paths, dir_paths, symlink_paths, metadata_na, invalid_paths) = path_checker_and_separator(&args.paths);
+    let (file_paths, dir_paths, metadata_na, invalid_paths) = path_checker_and_separator(&args.paths);
     let ascii_art = r##"
                                   ______   __                                          
                                  |   _  \ |__.-----.-----.-----.-----.-----.-----.----.
@@ -63,7 +63,7 @@ fn main() {
             display_file_checksum(&file_paths);
         }
     }
-    if args.sort != sort_flags::sn{
+    if args.sort != SortFlags::SN{
         if dir_paths.len() > 0{
             if depth == 0{
                 depth = 1;

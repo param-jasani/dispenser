@@ -50,11 +50,11 @@ impl Dates for DirectoryProperties {
     }
 
     fn date_modified(&self) -> Option<DateTime<Local>> {
-        self.date_created.to_owned()
+        self.date_modified.to_owned()
     }
 
     fn date_accessed(&self) -> Option<DateTime<Local>> {
-        self.date_created.to_owned()
+        self.date_accessed.to_owned()
     }
 }
 
@@ -64,10 +64,10 @@ impl Permission for DirectoryProperties{
     }
 }
 
-impl Child_Items for DirectoryProperties {
+impl ChildItems for DirectoryProperties {
     fn child_flag(&self) -> bool {
         match self.children_items.to_owned() {
-            Some(item) => true,
+            Some(_item) => true,
             None => false,
         }
     }

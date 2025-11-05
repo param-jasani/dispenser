@@ -1,10 +1,10 @@
-mod properties;
-mod path_error_handler;
 mod display_props;
+mod path_error_handler;
+mod properties;
 mod sorter;
-use clap::{Parser}; 
+use clap::Parser;
+use display_props::{display_directory_properties, display_file_checksum, display_file_properties};
 use path_error_handler::path_checker_and_separator;
-use display_props::{display_file_properties, display_directory_properties, display_file_checksum};
 use sorter::{SortFlags, sort_files};
 
 #[derive(Parser, Debug)]
@@ -29,14 +29,13 @@ struct Args {
     /// calculate SHA-256 checksum of files.
     #[arg(long)]
     checksum: bool,
-
 }
-
 
 fn main() {
     let args = Args::parse();
     let mut depth = Args::parse().depth;
-    let (file_paths, dir_paths, metadata_na, invalid_paths) = path_checker_and_separator(&args.paths);
+    let (file_paths, dir_paths, metadata_na, invalid_paths) =
+        path_checker_and_separator(&args.paths);
     let ascii_art = r##"
                                   ______   __                                          
                                  |   _  \ |__.-----.-----.-----.-----.-----.-----.----.
@@ -50,7 +49,7 @@ fn main() {
                                                   management tool.
     "##;
     println!("{}", ascii_art);
-    if args.metadata{
+    if args.metadata {
         if file_paths.len() > 0 {
             display_file_properties(&file_paths);
         }
@@ -58,14 +57,14 @@ fn main() {
             display_directory_properties(&dir_paths, depth);
         }
     }
-    if args.checksum{
+    if args.checksum {
         if file_paths.len() > 0 {
             display_file_checksum(&file_paths);
         }
     }
-    if args.sort != SortFlags::SN{
-        if dir_paths.len() > 0{
-            if depth == 0{
+    if args.sort != SortFlags::SN {
+        if dir_paths.len() > 0 {
+            if depth == 0 {
                 depth = 1;
             }
             sort_files(&dir_paths, args.sort, depth);

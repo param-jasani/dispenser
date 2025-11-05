@@ -1,8 +1,8 @@
-use core::{f64};
-use chrono::{Local, DateTime};
+use super::{AccessMethods, file_props::*, traits::*};
+use chrono::{DateTime, Local};
+use core::f64;
 use faccess::PathExt;
-use super::{AccessMethods, traits::*, file_props::*};
-use std::{path::PathBuf, fs};
+use std::{fs, path::PathBuf};
 
 #[derive(Debug, Clone)]
 pub(crate) struct DirectoryProperties {
@@ -16,17 +16,16 @@ pub(crate) struct DirectoryProperties {
     n_o_files: u32,
     n_o_folders: u32,
     access_permissions: Vec<AccessMethods>,
-    children_items: Option<FileFolders>
+    children_items: Option<FileFolders>,
 }
 
 #[derive(Debug, Clone)]
-struct FileFolders{
+struct FileFolders {
     files: Vec<FileProperties>,
-    folders: Vec<DirectoryProperties>
+    folders: Vec<DirectoryProperties>,
 }
 
-
-impl Info for DirectoryProperties  {
+impl Info for DirectoryProperties {
     fn name(&self) -> Option<String> {
         self.name.to_owned()
     }
@@ -58,7 +57,7 @@ impl Dates for DirectoryProperties {
     }
 }
 
-impl Permission for DirectoryProperties{
+impl Permission for DirectoryProperties {
     fn access_configs(&self) -> Vec<AccessMethods> {
         self.access_permissions.to_owned()
     }
@@ -74,19 +73,22 @@ impl ChildItems for DirectoryProperties {
     fn retrive_child_files(&self) -> Option<Vec<FileProperties>> {
         match self.children_items.to_owned() {
             Some(files_folders) => Some(files_folders.files),
-            None => None
+            None => None,
         }
     }
 
     fn retrive_sub_folders(&self) -> Option<Vec<DirectoryProperties>> {
         match self.children_items.to_owned() {
             Some(files_folders) => Some(files_folders.folders),
-            None => None
+            None => None,
         }
     }
 }
 
-pub fn set_directory_properties(dir_paths: &Vec<PathBuf>, mut rec_value: u32) -> Vec<DirectoryProperties>{
+pub fn set_directory_properties(
+    dir_paths: &Vec<PathBuf>,
+    mut rec_value: u32,
+) -> Vec<DirectoryProperties> {
     let mut rec_flag = false;
     if rec_value > 0 {
         rec_flag = true;
@@ -94,13 +96,19 @@ pub fn set_directory_properties(dir_paths: &Vec<PathBuf>, mut rec_value: u32) ->
     let mut dir_prop_struct_collection: Vec<DirectoryProperties> = Vec::new();
     for path in dir_paths {
         let metadata = path.metadata().expect("Error!! Cannot retrive metadata.");
-        let name = path.file_name().and_then(|p| p.to_str()).map(|p| p.to_string());
+        let name = path
+            .file_name()
+            .and_then(|p| p.to_str())
+            .map(|p| p.to_string());
         let ptype = Some("Directory".to_string());
         let location = path.parent().map(|p| p.to_path_buf());
-        let date_created: Option<DateTime<Local>> = metadata.created().ok().map(|dc| DateTime::from(dc));
-        let date_modified: Option<DateTime<Local>> = metadata.modified().ok().map(|dc| DateTime::from(dc));
-        let date_accessed: Option<DateTime<Local>> = metadata.accessed().ok().map(|dc| DateTime::from(dc));
-        let (size,  n_o_files, n_o_folders, files, folders) = get_size_and_count(path, rec_flag);        
+        let date_created: Option<DateTime<Local>> =
+            metadata.created().ok().map(|dc| DateTime::from(dc));
+        let date_modified: Option<DateTime<Local>> =
+            metadata.modified().ok().map(|dc| DateTime::from(dc));
+        let date_accessed: Option<DateTime<Local>> =
+            metadata.accessed().ok().map(|dc| DateTime::from(dc));
+        let (size, n_o_files, n_o_folders, files, folders) = get_size_and_count(path, rec_flag);
         let mut access_permissions: Vec<AccessMethods> = Vec::new();
         if path.readable() {
             access_permissions.push(AccessMethods::Read);
@@ -111,40 +119,74 @@ pub fn set_directory_properties(dir_paths: &Vec<PathBuf>, mut rec_value: u32) ->
         if path.executable() {
             access_permissions.push(AccessMethods::Execute);
         }
-        if rec_value > 0{
+        if rec_value > 0 {
             rec_value -= 1;
             let file_properties = set_file_properties(&files);
-            let dir_props= set_directory_properties(&folders, rec_value);
-            dir_prop_struct_collection.push(DirectoryProperties{ name, ptype, size, location, date_created, date_modified, date_accessed, n_o_files, n_o_folders, access_permissions, children_items: Some(FileFolders{files: file_properties, folders: dir_props}) }); 
-        }
-        else {
-            dir_prop_struct_collection.push(DirectoryProperties{ name, ptype, size, location, date_created, date_modified, date_accessed, n_o_files, n_o_folders, access_permissions, children_items: None}); 
+            let dir_props = set_directory_properties(&folders, rec_value);
+            dir_prop_struct_collection.push(DirectoryProperties {
+                name,
+                ptype,
+                size,
+                location,
+                date_created,
+                date_modified,
+                date_accessed,
+                n_o_files,
+                n_o_folders,
+                access_permissions,
+                children_items: Some(FileFolders {
+                    files: file_properties,
+                    folders: dir_props,
+                }),
+            });
+        } else {
+            dir_prop_struct_collection.push(DirectoryProperties {
+                name,
+                ptype,
+                size,
+                location,
+                date_created,
+                date_modified,
+                date_accessed,
+                n_o_files,
+                n_o_folders,
+                access_permissions,
+                children_items: None,
+            });
         }
     }
     dir_prop_struct_collection
 }
 
-fn get_size_and_count(dir_path: &PathBuf, rec_flag: bool) -> (f64, u32, u32, Vec<PathBuf>, Vec<PathBuf>) {
+fn get_size_and_count(
+    dir_path: &PathBuf,
+    rec_flag: bool,
+) -> (f64, u32, u32, Vec<PathBuf>, Vec<PathBuf>) {
     let child_items = fs::read_dir(dir_path).expect("Cannot read sub directories and files.");
     let mut size: f64 = 0.0;
     let mut n_o_folders: u32 = 0;
     let mut n_o_files: u32 = 0;
     let mut files: Vec<PathBuf> = Vec::new();
     let mut folders: Vec<PathBuf> = Vec::new();
-    for child in child_items{
+    for child in child_items {
         let sub_item = child.expect("Err!! occured while parsing directory").path();
-        let sub_item_metadata = sub_item.metadata().expect("Err!! while retriving metadata of sub items.");
-        if sub_item_metadata.is_dir(){
+        let sub_item_metadata = sub_item
+            .metadata()
+            .expect("Err!! while retrieving metadata of sub items.");
+        if sub_item_metadata.is_dir() {
             n_o_folders += 1;
             size += sub_item_metadata.len() as f64;
-            if rec_flag{
+            if rec_flag {
                 folders.push(sub_item.to_path_buf());
             }
-        }
-        else if sub_item.metadata().expect("Err!! while retriving metadata of sub items.").is_file() {
+        } else if sub_item
+            .metadata()
+            .expect("Err!! while retrieving metadata of sub items.")
+            .is_file()
+        {
             n_o_files += 1;
             size += sub_item_metadata.len() as f64;
-            if rec_flag{
+            if rec_flag {
                 files.push(sub_item.to_path_buf());
             }
         }

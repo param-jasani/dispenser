@@ -1,29 +1,29 @@
-use core::{f64};
-use std::{fs, path::PathBuf};
+use crate::path_error_handler::unwrapper;
+use chrono::{DateTime, Local};
+use core::f64;
 use faccess::PathExt;
 use sha256::digest;
-use chrono::{Local, DateTime};
-use super::{AccessMethods, traits::*};
+use std::{fs, path::PathBuf};
 
+use super::{AccessMethods, traits::*};
 
 #[derive(Debug, Clone)]
 pub(crate) struct FileProperties {
-    name: Option<String>, 
+    name: Option<String>,
     extension: Option<String>,
     size: f64,
-    location: Option<PathBuf>, 
+    location: Option<PathBuf>,
     date_created: Option<DateTime<Local>>,
     date_modified: Option<DateTime<Local>>,
     date_accessed: Option<DateTime<Local>>,
-    access_permissions: Vec<AccessMethods>, 
+    access_permissions: Vec<AccessMethods>,
 }
-
 
 impl Info for FileProperties {
     fn name(&self) -> Option<String> {
         self.name.to_owned()
     }
-    
+
     fn extension(&self) -> Option<String> {
         self.extension.to_owned()
     }
@@ -43,7 +43,7 @@ impl Dates for FileProperties {
     }
 
     fn date_modified(&self) -> Option<DateTime<Local>> {
-        self.date_modified    
+        self.date_modified
     }
 
     fn date_accessed(&self) -> Option<DateTime<Local>> {
@@ -57,24 +57,34 @@ impl Permission for FileProperties {
     }
 }
 
-impl Hash for FileProperties{
+impl Hash for FileProperties {
     fn hash(&self) -> Option<String> {
-        fs::read(self.location.to_owned().expect("Err!! Couldn't find the given location of file.").join(self.name.to_owned().expect("Err!! Unable to fetch file name."))).ok().map(|file_contents| digest(file_contents))
-    }    
+        fs::read(PathBuf::from(unwrapper(self, "Path")))
+            .ok()
+            .map(|file_contents| digest(file_contents))
+    }
 }
-
 
 pub fn set_file_properties(file_path: &Vec<PathBuf>) -> Vec<FileProperties> {
     let mut file_prop_struct_collection: Vec<FileProperties> = Vec::new();
     for path in file_path {
         let metadata = path.metadata().expect("Error!! Cannot retrive metadata.");
-        let name = path.file_name().and_then(|p| p.to_str()).map(|p| p.to_string());
-        let extension = path.extension().and_then(|e| e.to_str()).map(|e| e.to_string());
+        let name = path
+            .file_name()
+            .and_then(|p| p.to_str())
+            .map(|p| p.to_string());
+        let extension = path
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_string());
         let size = metadata.len() as f64 / 1024 as f64;
         let location = path.parent().map(|p| p.to_path_buf());
-        let date_created: Option<DateTime<Local>> = metadata.created().ok().map(|dc| DateTime::from(dc));
-        let date_modified: Option<DateTime<Local>> = metadata.modified().ok().map(|dm| DateTime::from(dm)); 
-        let date_accessed: Option<DateTime<Local>> = metadata.accessed().ok().map(|da| DateTime::from(da)); 
+        let date_created: Option<DateTime<Local>> =
+            metadata.created().ok().map(|dc| DateTime::from(dc));
+        let date_modified: Option<DateTime<Local>> =
+            metadata.modified().ok().map(|dm| DateTime::from(dm));
+        let date_accessed: Option<DateTime<Local>> =
+            metadata.accessed().ok().map(|da| DateTime::from(da));
         let mut access_permissions: Vec<AccessMethods> = Vec::new();
         if path.readable() {
             access_permissions.push(AccessMethods::Read);
@@ -85,7 +95,16 @@ pub fn set_file_properties(file_path: &Vec<PathBuf>) -> Vec<FileProperties> {
         if path.executable() {
             access_permissions.push(AccessMethods::Execute);
         }
-        file_prop_struct_collection.push(FileProperties { name, extension, size, location, date_created, date_modified, date_accessed, access_permissions}); 
+        file_prop_struct_collection.push(FileProperties {
+            name,
+            extension,
+            size,
+            location,
+            date_created,
+            date_modified,
+            date_accessed,
+            access_permissions,
+        });
     }
     file_prop_struct_collection
 }

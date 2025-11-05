@@ -1,6 +1,6 @@
+use super::{AccessMethods, dir_props::DirectoryProperties, file_props::FileProperties};
+use chrono::{DateTime, Local};
 use std::path::PathBuf;
-use chrono::{Local, DateTime};
-use super::{AccessMethods, file_props::FileProperties, dir_props::DirectoryProperties};
 
 pub trait Info {
     fn name(&self) -> Option<String>;
@@ -23,7 +23,7 @@ pub trait Hash {
     fn hash(&self) -> Option<String>;
 }
 
-pub trait ChildItems{
+pub trait ChildItems {
     fn child_flag(&self) -> bool;
     fn retrive_child_files(&self) -> Option<Vec<FileProperties>>;
     fn retrive_sub_folders(&self) -> Option<Vec<DirectoryProperties>>;

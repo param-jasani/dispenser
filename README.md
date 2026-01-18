@@ -22,7 +22,7 @@
 
 ## Features
 
-- **📊 Metadata Retrieval**: Get comprehensive information about files and directories
+- **Metadata Retrieval**: Get comprehensive information about files and directories
   - Name, type, size, location
   - Creation, modification, and access timestamps
   - File permissions (read, write, execute)
